@@ -121,7 +121,7 @@ col_imp <- sequential_hcl(
   palette = "Purples 2",
 )
 
-cairo_pdf("~/Documents/Figures/Saal_Kanu_global_shap_validationset.pdf", 
+cairo_pdf("fig/Saal_Kanu_global_shap_validationset.pdf", 
           width = 8, 
           height = 6)
 par(mar = c(4, 8, 4, 2))
