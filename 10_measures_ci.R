@@ -1,7 +1,7 @@
-#
 # packages ----
 library(xtable)
 library(effsize)
+library(kernlab)
 
 # calc CI from quantiles ----
 # Load the saved benchmark results from an RDS file
@@ -109,6 +109,10 @@ top_shift_overall <- res_shift[
   order(-abs(hedges_g))
 ][1:10]
 
+top_shift_overall <- res_shift[
+  order(-abs(hedges_g))
+]
+
 # Top shifts per validation year
 top_shift_by_year <- res_shift[
   order(cohort, -abs(hedges_g))
@@ -120,9 +124,36 @@ top_shift_mean_feature <- res_shift[
   by = feature
 ][order(-mean_abs_g)]
 
+
 top_shift_overall
 top_shift_by_year
 top_shift_mean_feature
+
+# feature shift MMD ----
+
+task <- readRDS("temp/task.rds")
+task_val_2021 <- readRDS("temp/task_val_2021.rds")
+task_val_2022 <- readRDS("temp/task_val_2022.rds")
+task_val_2023 <- readRDS("temp/task_val_2023.rds")
+
+num_cols <- c("ASW", "Ausd", "B2000", "B250", "KG", "KH", "KWW", "Kraft", "Sprint_30m", "h_unten", "alter")
+
+X_train <- as.data.table(task$data(cols = num_cols))
+X_2021 <- as.data.table(task_val_2021$data(cols = num_cols))
+X_2022 <- as.data.table(task_val_2022$data(cols = num_cols))
+X_2023 <- as.data.table(task_val_2023$data(cols = num_cols))
+
+mu <- sapply(X_train, mean, na.rm = TRUE)
+sdv <- sapply(X_train, sd, na.rm = TRUE)
+
+X_train_sc <- as.data.table(scale(X_train, center = mu, scale = sdv))
+X_2021_sc <- as.data.table(scale(X_2021, center = mu, scale = sdv))
+X_2022_sc <- as.data.table(scale(X_2022, center = mu, scale = sdv))
+X_2023_sc <- as.data.table(scale(X_2023, center = mu, scale = sdv))
+
+mmd2021 <- kmmd(as.matrix(X_train_sc), as.matrix(X_2021_sc), kernel = "rbfdot")
+mmd2022 <- kmmd(as.matrix(X_train_sc), as.matrix(X_2022_sc), kernel = "rbfdot")
+mmd2023 <- kmmd(as.matrix(X_train_sc), as.matrix(X_2023_sc), kernel = "rbfdot")
 
 
 # clean workspace ----
